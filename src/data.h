@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include "handle.h"
-#include "endian.h"
+#include "endianconv.h"
 #include "packet.h"
 
 int data_write_special(nspire_handle_t*, void*, size_t,

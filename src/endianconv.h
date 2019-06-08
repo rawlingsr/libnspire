@@ -15,8 +15,8 @@
     along with libnspire.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ENDIAN_H
-#define _ENDIAN_H
+#ifndef ENDIAN_H
+#define ENDIAN_H
 
 #include "config.h"
 #include <inttypes.h>

@@ -21,7 +21,7 @@
 #include "error.h"
 #include "data.h"
 #include "service.h"
-#include "endian.h"
+#include "endianconv.h"
 #include "devinfo.h"
 
 int nspire_device_info(nspire_handle_t *handle, struct nspire_devinfo *i) {

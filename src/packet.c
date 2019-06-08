@@ -22,7 +22,7 @@
 #include "packet.h"
 #include "error.h"
 #include "usb.h"
-#include "endian.h"
+#include "endianconv.h"
 
 #define PACKET_CONSTANT 0x54FD
 #define HEADER_SIZE offsetof(struct packet, data)
