@@ -68,6 +68,7 @@ int nspire_dirlist(nspire_handle_t *handle, const char *path,
 	int ret;
 	size_t len;
 	uint8_t buffer[254], code;
+	uint16_t result;
 	struct nspire_dir_info *d;
 
 	if ( (ret = service_connect(handle, 0x4060)) )
@@ -116,6 +117,23 @@ int nspire_dirlist(nspire_handle_t *handle, const char *path,
 		if (ret)
 			break;
 	}
+
+	/* End dir enum */
+	if ( (ret = data_build("b", buffer, sizeof(buffer), &len,
+			0x0F)) )
+		goto end;
+
+	if ( (ret = data_write(handle, buffer, len)) )
+		goto end;
+
+	if ( (ret = data_read(handle, buffer, 2)) )
+		goto end;
+
+	if ( (ret = data_scan("h", buffer, sizeof(buffer),
+			NULL, &result)) )
+		goto end;
+
+	// TODO: result ignored here, what to do on failure anyway?
 
 	ret = NSPIRE_ERR_SUCCESS;
 end:
@@ -190,7 +208,6 @@ int nspire_attr(nspire_handle_t *handle, const char *path,
 	int ret;
 	size_t len;
 	uint8_t is_dir, buffer[254];
-	uint16_t result;
 	uint32_t size, date;
 
 	if ( (ret = service_connect(handle, 0x4060)) )
