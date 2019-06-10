@@ -74,7 +74,7 @@ int nspire_dirlist(nspire_handle_t *handle, const char *path,
 		return ret;
 
 	/* Begin dir enum */
-	if ( (ret = data_build("bs", buffer, sizeof(buffer), &len,
+	if ( (ret = data_build("bs0", buffer, sizeof(buffer), &len,
 			0x0D, path)) )
 		goto end;
 
