@@ -27,7 +27,7 @@ int data_write_special(nspire_handle_t*, void*, size_t,
 		void (*)(struct packet *));
 
 int data_write(nspire_handle_t *handle, void *ptr, size_t maxlen);
-int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen);
+int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen, size_t *actual);
 int data_build(const char *, void *, size_t, size_t *, ...);
 int data_scan(const char *, const void *, size_t, ...);
 

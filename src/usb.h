@@ -20,6 +20,10 @@
 
 #include <libusb.h>
 
+#define NSP_VID 0x0451
+#define NSP_PID 0xe012
+#define NSP_PID_CX2 0xe022
+
 typedef struct {
 	libusb_device_handle *dev;
 	unsigned char ep_in, ep_out;
@@ -27,7 +31,7 @@ typedef struct {
 
 int usb_init();
 void usb_finish();
-int usb_get_device(usb_device_t *handle);
+int usb_get_device(usb_device_t *handle, uint16_t vid, uint16_t pid);
 void usb_free_device(usb_device_t *handle);
 int usb_write(usb_device_t *handle, void *ptr, int len);
 int usb_read(usb_device_t *handle, void *ptr, int len);

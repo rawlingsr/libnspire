@@ -36,7 +36,7 @@ int nspire_device_info(nspire_handle_t *handle, struct nspire_devinfo *i) {
 	if ( (ret = data_write8(handle, 0x01)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	/* Shift up one byte to align */
@@ -83,7 +83,7 @@ int nspire_device_info(nspire_handle_t *handle, struct nspire_devinfo *i) {
 	if ( (ret = data_write8(handle, 0x02)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("bS", buffer, sizeof(buffer),
@@ -96,7 +96,7 @@ int nspire_device_info(nspire_handle_t *handle, struct nspire_devinfo *i) {
 	if ( (ret = data_write8(handle, 0x03)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("bSS", buffer, sizeof(buffer),

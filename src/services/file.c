@@ -39,7 +39,7 @@ int nspire_file_write(nspire_handle_t *handle, const char *path,
 	if ( (ret = data_write(handle, buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if (buffer[0] != 0x04) {
@@ -59,7 +59,7 @@ int nspire_file_write(nspire_handle_t *handle, const char *path,
 		ptr += len;
 	}
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer), &result)) )
@@ -75,7 +75,7 @@ int nspire_file_read(nspire_handle_t *handle, const char *path,
 		void* data, size_t size, size_t *total_bytes) {
 	int ret;
 	size_t len;
-	uint8_t buffer[254], *ptr = data;
+	uint8_t buffer[packet_max_datasize(handle)], *ptr = data;
 	uint16_t result;
 	uint32_t data_len;
 
@@ -89,7 +89,7 @@ int nspire_file_read(nspire_handle_t *handle, const char *path,
 	if ( (ret = data_write(handle, buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h000000000w", buffer, sizeof(buffer),
@@ -106,22 +106,24 @@ int nspire_file_read(nspire_handle_t *handle, const char *path,
 
 	if (total_bytes) *total_bytes = 0;
 
-	while (data_len) {
-		len = (253 < data_len) ? 253 : data_len;
+	size_t maxsize = packet_max_datasize(handle) - 1;
 
-		if ( (ret = data_read(handle, buffer, len+1)) )
+	while (data_len) {
+		len = (maxsize < data_len) ? maxsize : data_len;
+
+		if ( (ret = data_read(handle, buffer, len+1, &len)) )
 			goto end;
 
 		if (size) {
-			size_t to_copy = len < size ? len : size;
+			size_t to_copy = len - 1;
 			memcpy(ptr, buffer + 1, to_copy);
 			size -= to_copy;
 
 			ptr += to_copy;
 		}
 
-		if (total_bytes) *total_bytes += len;
-		data_len -= len;
+		if (total_bytes) *total_bytes += len - 1;
+		data_len -= len - 1;
 	}
 
 	if ( (ret = data_write16(handle, 0xFF00)) )
@@ -151,7 +153,7 @@ int nspire_file_move(nspire_handle_t *handle,
 	if ( (ret = data_write(handle, &buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, &buffer, 2)) )
+	if ( (ret = data_read(handle, &buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer), &result)) )
@@ -181,7 +183,7 @@ int nspire_file_copy(nspire_handle_t *handle,
 	if ( (ret = data_write(handle, &buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, &buffer, 2)) )
+	if ( (ret = data_read(handle, &buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer), &result)) )
@@ -210,7 +212,7 @@ int nspire_file_delete(nspire_handle_t *handle, const char *path) {
 	if ( (ret = data_write(handle, &buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, &buffer, 2)) )
+	if ( (ret = data_read(handle, &buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer), &result)) )

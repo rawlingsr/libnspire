@@ -33,18 +33,26 @@ int nspire_init(nspire_handle_t **ptr) {
 	if ( (ret = usb_init()) )
 		goto error;
 
-	if ( (ret = usb_get_device(&h->device)) )
-		goto error;
+	h->is_cx2 = false;
+	if ( (ret = usb_get_device(&h->device, NSP_VID, NSP_PID)) ) {
+		h->is_cx2 = true;
+		if ( (ret = usb_get_device(&h->device, NSP_VID, NSP_PID_CX2)) )
+			goto error;
+	}
 
 	h->host_addr = 0x6400;
 	h->device_addr = 0x6401;
 	h->host_sid = 0x4003;
 	h->device_sid = 0x4003;
 	h->connected = 0;
-	h->seq = 1;
+	h->seq = 0;
+        h->cx2_handshake_complete = false;
 
-	if ( (ret = packet_recv(h, NULL)) )
-		goto error_free_usb;
+	if (!h->is_cx2) {
+		// Wait for an address request
+		if ( (ret = packet_recv(h, NULL)) )
+			goto error_free_usb;
+	}
 
 	p = packet_new(h);
 	packet_set_data(p, 0x64, 0x01, 0xFF, 0x00);

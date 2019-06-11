@@ -18,6 +18,7 @@
 #ifndef _HANDLE_H
 #define _HANDLE_H
 
+#include <stdbool.h>
 #include <inttypes.h>
 
 #include "api/handle.h"
@@ -29,6 +30,9 @@ struct nspire_handle {
 	uint16_t host_addr, device_addr;
 	uint16_t host_sid, device_sid;
 	uint8_t seq, connected;
+
+	bool is_cx2;
+	bool cx2_handshake_complete;
 };
 
 #endif

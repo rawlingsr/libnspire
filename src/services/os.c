@@ -38,7 +38,7 @@ int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 	if ( (ret = data_write(handle, buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if (buffer[0] != 0x04) {
@@ -57,7 +57,7 @@ int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 		if (ptr == data) {
 			/* First run - read 0xFF00 */
 			uint16_t code;
-			if ( (ret = data_read(handle, &code, 2)) )
+			if ( (ret = data_read(handle, &code, 2, NULL)) )
 				goto end;
 
 			if (dcpu16(code) != 0xFF00) {
@@ -71,7 +71,7 @@ int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 	}
 
 	while (1) {
-		if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+		if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 			goto end;
 
 		if (buffer[0] == 0xFF) {

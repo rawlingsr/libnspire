@@ -20,8 +20,6 @@
 #include "usb.h"
 #include "error.h"
 
-#define NSP_VID 0x0451
-#define NSP_PID 0xe012
 #define NSP_DEFAULT_CONFIG 1
 #define NSP_DEFAULT_IFACE 0
 #define NSP_TIMEOUT 10000
@@ -44,14 +42,14 @@ void usb_finish() {
 	libusb_exit(usb_ctx);
 }
 
-int usb_get_device(usb_device_t *handle) {
+int usb_get_device(usb_device_t *handle, uint16_t vid, uint16_t pid) {
 	int i;
 	struct libusb_config_descriptor *config;
 	const struct libusb_interface_descriptor *iface;
 	libusb_device_handle *dev;
 
 	/* Libusb boilerplate */
-	if (!(dev = libusb_open_device_with_vid_pid(usb_ctx, NSP_VID, NSP_PID)))
+	if (!(dev = libusb_open_device_with_vid_pid(usb_ctx, vid, pid)))
 		goto error;
 	if (libusb_set_configuration(dev, NSP_DEFAULT_CONFIG))
 		goto error_close;

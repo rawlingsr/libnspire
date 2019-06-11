@@ -74,7 +74,7 @@ int nspire_screenshot(nspire_handle_t *handle, struct nspire_image **ptr) {
 	if ( (ret = data_write8(handle, 0x00)) )
 		return ret;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("bwhhhhbb", buffer, sizeof(buffer),
@@ -101,7 +101,7 @@ int nspire_screenshot(nspire_handle_t *handle, struct nspire_image **ptr) {
 	i->bbp = bbp;
 
 	while (size) {
-		if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+		if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 			goto error_free;
 
 		len = 253 < size ? 253 : size;

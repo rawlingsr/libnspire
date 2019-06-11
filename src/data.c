@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "endianconv.h"
 #include "error.h"
 #include "packet.h"
 #include "handle.h"
@@ -42,14 +43,24 @@ int data_write_special(nspire_handle_t *handle, void *ptr, size_t maxlen,
 	struct packet p = packet_new(handle);
 	size_t len = (maxlen < sizeof(p.data)) ? maxlen : sizeof(p.data);
 
-	memcpy(p.data, ptr, len);
-	p.data_size = len;
+	if(len < 0xFF) {
+		memcpy(p.data, ptr, len);
+		p.data_size = len;
+	} else if(len < packet_max_datasize(handle)) {
+		memcpy(p.bigdata, ptr, len);
+		p.bigdatasize = dcpu32(len);
+	} else
+		return NSPIRE_ERR_NOMEM;
 
 	if (packet_callback)
 		packet_callback(&p);
 
 	if ((ret = packet_send(handle, p)))
 		return ret;
+
+	// Acks are handled a level lower only, in packet_send
+	if (handle->is_cx2)
+		return NSPIRE_ERR_SUCCESS;
 
 	/*
 	 * Wait for an ACK packet while also NACKing spurious packets (like
@@ -81,7 +92,7 @@ int data_write(nspire_handle_t *handle, void *ptr, size_t maxlen) {
 	return data_write_special(handle, ptr, maxlen, NULL);
 }
 
-int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen) {
+int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen, size_t *actual) {
 	int ret;
 	size_t len;
 	struct packet p;
@@ -91,6 +102,10 @@ int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen) {
 			return ret;
 
 		if (p.dst_sid == handle->host_sid) {
+			// Acks are handled a level lower only, in packet_recv
+			if(handle->is_cx2)
+				break;
+
 			if ( (ret = packet_ack(handle, p)) )
 				return ret;
 			break;
@@ -102,8 +117,11 @@ int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen) {
 			return ret;
 	}
 
-	len = (maxlen < p.data_size) ? maxlen : p.data_size;
-	memcpy(ptr, p.data, len);
+	len = (maxlen < packet_datasize(&p)) ? maxlen : packet_datasize(&p);
+	memcpy(ptr, packet_dataptr(&p), len);
+
+	if(actual)
+		*actual = len;
 
 	return NSPIRE_ERR_SUCCESS;
 }

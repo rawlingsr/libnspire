@@ -6,7 +6,7 @@ libnspire_la_CPPFLAGS	= @USB_CFLAGS@
 libnspire_la_LIBADD	= @USB_LIBS@
 libnspire_la_LDFLAGS	= -export-symbols-regex '^nspire_'
 libnspire_la_SOURCES	= *.h services/*.h \
-	data.c error.c init.c packet.c service.c usb.c \
+	data.c error.c init.c packet.c service.c usb.c cx2.cpp \
 	services/devinfo.c \
 	services/dir.c \
 	services/file.c \

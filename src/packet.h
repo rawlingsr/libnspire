@@ -28,11 +28,18 @@ struct packet {
                 dst_addr,
                 dst_sid,
                 data_checksum;
-    uint8_t     data_size,
+    uint8_t     data_size, // If 0xFF, bigdata* counts
                 ack,
                 seq,
                 header_checksum;
-    uint8_t     data[254];
+    union {
+        uint8_t      data[254];
+        struct {
+            uint32_t bigdatasize;
+            uint8_t  bigdata[1440];
+        };
+	uint8_t      fulldata[1444];
+    };
 };
 
 #define packet_set_data(p, arr...) do { \
@@ -46,5 +53,9 @@ int packet_recv(nspire_handle_t *h, struct packet *p);
 struct packet packet_new(nspire_handle_t *h);
 int packet_ack(nspire_handle_t *h, struct packet p);
 int packet_nack(nspire_handle_t *h, struct packet p);
+uint8_t *packet_dataptr(struct packet *p);
+uint32_t packet_datasize(const struct packet *p);
+uint32_t packet_fulldatasize(const struct packet *p);
+uint32_t packet_max_datasize(nspire_handle_t *h);
 
 #endif

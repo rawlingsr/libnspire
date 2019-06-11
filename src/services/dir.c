@@ -36,7 +36,7 @@ static int dir_enum(nspire_handle_t *handle, struct nspire_dir_info **d) {
 
 	if ( (ret = data_write8(handle, 0x0E)) )
 		return ret;
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		return ret;
 
 	if (buffer[0] == 0xFF)
@@ -82,7 +82,7 @@ int nspire_dirlist(nspire_handle_t *handle, const char *path,
 	if ( (ret = data_write(handle, buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, 2)) )
+	if ( (ret = data_read(handle, buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("bb", buffer, sizeof(buffer),
@@ -126,7 +126,7 @@ int nspire_dirlist(nspire_handle_t *handle, const char *path,
 	if ( (ret = data_write(handle, buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, 2)) )
+	if ( (ret = data_read(handle, buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer),
@@ -151,7 +151,6 @@ int nspire_dir_create(nspire_handle_t *handle, const char *path) {
 	uint16_t result;
 	uint8_t buffer[254];
 
-
 	if ( (ret = service_connect(handle, 0x4060)) )
 		return ret;
 
@@ -162,7 +161,7 @@ int nspire_dir_create(nspire_handle_t *handle, const char *path) {
 	if ( (ret = data_write(handle, &buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, &buffer, 2)) )
+	if ( (ret = data_read(handle, &buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer), &result)) )
@@ -191,7 +190,7 @@ int nspire_dir_delete(nspire_handle_t *handle, const char *path) {
 	if ( (ret = data_write(handle, &buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, &buffer, 2)) )
+	if ( (ret = data_read(handle, &buffer, 2, NULL)) )
 		goto end;
 
 	if ( (ret = data_scan("h", buffer, sizeof(buffer), &result)) )
@@ -220,7 +219,7 @@ int nspire_attr(nspire_handle_t *handle, const char *path,
 	if ( (ret = data_write(handle, buffer, len)) )
 		goto end;
 
-	if ( (ret = data_read(handle, buffer, sizeof(buffer))) )
+	if ( (ret = data_read(handle, buffer, sizeof(buffer), NULL)) )
 		goto end;
 
 	if (buffer[0] != 0x20) {

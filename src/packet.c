@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <stddef.h>
 
+#include "cx2.h"
 #include "handle.h"
 #include "packet.h"
 #include "error.h"
@@ -34,7 +35,7 @@ static uint8_t calculate_header_checksum(uint8_t *data, uint8_t size) {
 	return chksum;
 }
 
-static uint16_t calculate_data_checksum(uint8_t *data, uint8_t size) {
+static uint16_t calculate_data_checksum(uint8_t *data, uint32_t size) {
 	uint16_t chksum = 0;
 	int i;
 	for (i=0; i<size; i++) {
@@ -62,7 +63,7 @@ static void finalize_packet(struct packet *p) {
 	p->magic = PACKET_CONSTANT;
 
 	/* Calculate checksums */
-	p->data_checksum = calculate_data_checksum(p->data, p->data_size);
+	p->data_checksum = calculate_data_checksum(p->fulldata, packet_fulldatasize(p));
 	p->header_checksum = calculate_header_checksum(
 		(uint8_t*)p,
 		HEADER_SIZE - 1
@@ -84,7 +85,7 @@ static int is_header_valid(struct packet *p) {
 }
 
 static int is_data_valid(struct packet *p) {
-	uint16_t data_chksum = calculate_data_checksum(p->data, p->data_size);
+	uint16_t data_chksum = calculate_data_checksum(p->fulldata, packet_fulldatasize(p));
 	if (!(p->data_checksum == data_chksum))		return 0;
 	return 1;
 }
@@ -98,10 +99,10 @@ static void dump_packet(const struct packet *p) {
 		"src_sid	= %04x\n"
 		"dst_addr	= %04x\n"
 		"dst_sid	= %04x\n"
-		"data_chksm = %04x\n"
+		"data_chksm	= %04x\n"
 		"size		= %02x\n"
 		"ack		= %02x\n"
-		"sqe		= %02x\n"
+		"seq		= %02x\n"
 		"hdr_chksm	= %02x\n"
 		"data		= ",
 		p->magic,
@@ -116,15 +117,15 @@ static void dump_packet(const struct packet *p) {
 		p->header_checksum);
 
 	int i;
-	for (i=0; i<(p->data_size); i++) {
-		printf("%02x ", p->data[i]);
+	for (i=0; i<(packet_fullsize(p)); i++) {
+		printf("%02x ", p->fulldata[i]);
 	}
 	printf("\n");
 }
 #endif
 
 int packet_send(nspire_handle_t *h, struct packet p) {
-	int size = HEADER_SIZE + p.data_size;
+	int size = HEADER_SIZE + packet_datasize(&p);
 
 #ifdef DEBUG
 	printf("\nOUT ===>\n");
@@ -132,7 +133,10 @@ int packet_send(nspire_handle_t *h, struct packet p) {
 #endif
 
 	finalize_packet(&p);
-	return usb_write(&h->device, &p, size);
+	if(h->is_cx2)
+		return packet_send_cx2(h, (char*)&p, size);
+	else
+		return usb_write(&h->device, (char*)&p, size);
 }
 
 int packet_recv(nspire_handle_t *h, struct packet *p) {
@@ -143,7 +147,11 @@ int packet_recv(nspire_handle_t *h, struct packet *p) {
 	if (!p)
 		p = &unused;
 
-	ret = usb_read(&h->device, p, sizeof(*p));
+	if(h->is_cx2)
+		ret = packet_recv_cx2(h, (char*)p, sizeof(*p));
+	else
+		ret = usb_read(&h->device, p, sizeof(*p));
+
 	if (ret < 0)
 		return ret;
 
@@ -166,7 +174,7 @@ struct packet packet_new(nspire_handle_t *h) {
 	p.dst_addr = h->device_addr;
 	p.src_sid = h->host_sid;
 	p.dst_sid = h->device_sid;
-	p.seq = h->seq;
+	p.seq = h->is_cx2 ? 0 : h->seq;
 
 	return p;
 }
@@ -197,4 +205,20 @@ int packet_nack(nspire_handle_t *h, struct packet p) {
 	nack.src_sid = 0xD3;
 
 	return packet_send(h, nack);
+}
+
+uint8_t *packet_dataptr(struct packet *p) {
+	return (p->data_size == 0xFF) ? p->bigdata : p->data;
+}
+
+uint32_t packet_datasize(const struct packet *p) {
+	return (p->data_size == 0xFF) ? dcpu32(p->bigdatasize) : p->data_size;
+}
+
+uint32_t packet_max_datasize(nspire_handle_t *h) {
+	return h->is_cx2 ? 1440 : 254;
+}
+
+uint32_t packet_fulldatasize(const struct packet *p) {
+	return (p->data_size == 0xFF) ? (dcpu32(p->bigdatasize) + 4) : p->data_size;
 }
