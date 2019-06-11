@@ -117,7 +117,7 @@ static void dump_packet(const struct packet *p) {
 		p->header_checksum);
 
 	int i;
-	for (i=0; i<(packet_fullsize(p)); i++) {
+	for (i=0; i<(packet_fulldatasize(p)); i++) {
 		printf("%02x ", p->fulldata[i]);
 	}
 	printf("\n");
