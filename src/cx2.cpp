@@ -226,7 +226,7 @@ static void handlePacket(struct nspire_handle *nsp_handle, NNSEMessage *message,
 {
 	auto *handle = nsp_handle->device.dev;
 
-	if(message->dest != 0xFE && message->dest != AddrAll)
+	if(message->dest != AddrMe && message->dest != AddrAll)
 	{
 #ifdef DEBUG
 		printf("Not for me?\n");
@@ -359,18 +359,12 @@ static void handlePacket(struct nspire_handle *nsp_handle, NNSEMessage *message,
 	printf("Ignoring packet.\n");
 }
 
-#include <fcntl.h>
-#include <unistd.h>
 static bool assureReady(struct nspire_handle *nsp_handle)
 {
 	if(nsp_handle->cx2_handshake_complete)
 		return true;
 
 	auto *handle = nsp_handle->device.dev;
-
-	int fd = open("/tmp/cxIIlog", O_WRONLY | O_CREAT | O_APPEND, 0644);
-	dup2(fd, 1);
-	close(fd);
 
 	const int maxlen = sizeof(NNSEMessage) + 1472;
 	NNSEMessage * const message = reinterpret_cast<NNSEMessage*>(malloc(maxlen));
