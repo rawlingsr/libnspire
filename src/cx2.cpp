@@ -267,7 +267,9 @@ static void handlePacket(struct nspire_handle *nsp_handle, NNSEMessage *message,
 			if(!req || req->code != 0)
 				goto drop;
 
+#ifdef DEBUG
 			printf("Got request from client %s (product id %c%c)\n", &req->clientID[12], req->clientID[10], req->clientID[11]);
+#endif
 			
 			NNSEMessage_AddrResp resp = {
 				.hdr = {
@@ -346,7 +348,7 @@ static void handlePacket(struct nspire_handle *nsp_handle, NNSEMessage *message,
 				*streamdata = message->data;
 			if(streamsize)
 				*streamsize = ntohs(message->length) - sizeof(NNSEMessage);
-			printf("Got stream pkt\n");
+
 			break;
 		}
 		default:
