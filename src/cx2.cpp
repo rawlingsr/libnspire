@@ -139,7 +139,7 @@ static bool readPacket(libusb_device_handle *handle, NNSEMessage *message, int m
 
 	int transferred = 0;
 	memset(message, 0, sizeof(NNSEMessage));
-	int r = libusb_bulk_transfer(handle, 0x81, reinterpret_cast<unsigned char*>(message), maxlen, &transferred, 1000);
+	int r = libusb_bulk_transfer(handle, 0x81, reinterpret_cast<unsigned char*>(message), maxlen, &transferred, 60000);
 
 	if(r < 0
 		|| transferred < sizeof(NNSEMessage))
