@@ -129,7 +129,10 @@ static uint16_t compute_checksum(const uint8_t *data, uint32_t size)
 			acc += (((uint16_t)data[size - 1]) << 8);
 	}
 
-	return acc + (acc >> 16);
+	while (acc >> 16)
+		acc = (acc >> 16) + uint16_t(acc);
+
+	return acc;
 }
 
 static bool readPacket(libusb_device_handle *handle, NNSEMessage *message, int maxlen)
