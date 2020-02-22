@@ -60,7 +60,7 @@ int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 			if ( (ret = data_read(handle, &code, 2, NULL)) )
 				goto end;
 
-			if (dcpu16(code) != 0xFF00) {
+			if (dcpu16(code) != 0xFF00 && dcpu16(code) != 0x0400) {
 				ret = -NSPIRE_ERR_OSFAILED;
 				goto end;
 			}
@@ -79,7 +79,8 @@ int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 			goto end;
 		}
 
-		if (buffer[1] == 100)
+		// Yes, over 100% is actually possible...
+		if (buffer[1] >= 100)
 			break;
 	}
 
