@@ -45,8 +45,8 @@ int nspire_init(nspire_handle_t **ptr) {
 	h->host_sid = 0x4003;
 	h->device_sid = 0x4003;
 	h->connected = 0;
-	h->seq = 0;
-        h->cx2_handshake_complete = false;
+	h->seq = 1;
+	h->cx2_handshake_complete = false;
 
 	if (!h->is_cx2) {
 		// Wait for an address request
