@@ -125,7 +125,7 @@ static void dump_packet(const struct packet *p) {
 #endif
 
 int packet_send(nspire_handle_t *h, struct packet p) {
-	int size = HEADER_SIZE + packet_datasize(&p);
+	int size = HEADER_SIZE + packet_fulldatasize(&p);
 
 #ifdef DEBUG
 	printf("\nOUT ===>\n");

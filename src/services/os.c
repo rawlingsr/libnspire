@@ -26,7 +26,7 @@
 int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 	int ret;
 	size_t len;
-	uint8_t buffer[254], *ptr = data;
+	uint8_t buffer[sizeof(struct packet)], *ptr = data;
 
 	if ( (ret = service_connect(handle, 0x4080)) )
 		return ret;
@@ -46,9 +46,10 @@ int nspire_os_send(nspire_handle_t *handle, void* data, size_t size) {
 		goto end;
 	}
 
+	size_t datasize = packet_max_datasize(handle) - 1;
 	buffer[0] = 0x05;
 	while (size) {
-		len = (253 < size) ? 253 : size;
+		len = (datasize < size) ? datasize : size;
 
 		memcpy(buffer + 1, ptr, len);
 		if ( (ret = data_write(handle, buffer, len+1)) )

@@ -37,18 +37,18 @@ static int handle_unknown(nspire_handle_t *handle, struct packet p) {
 	return ret;
 }
 
-int data_write_special(nspire_handle_t *handle, void *ptr, size_t maxlen,
+int data_write_special(nspire_handle_t *handle, void *ptr, size_t len,
 		void (*packet_callback)(struct packet *p)) {
 	int ret;
 	struct packet p = packet_new(handle);
-	size_t len = (maxlen < sizeof(p.data)) ? maxlen : sizeof(p.data);
 
 	if(len < 0xFF) {
 		memcpy(p.data, ptr, len);
 		p.data_size = len;
-	} else if(len < packet_max_datasize(handle)) {
+	} else if(len <= packet_max_datasize(handle)) {
 		memcpy(p.bigdata, ptr, len);
 		p.bigdatasize = dcpu32(len);
+		p.data_size = 0xFF;
 	} else
 		return NSPIRE_ERR_NOMEM;
 
@@ -88,8 +88,8 @@ int data_write_special(nspire_handle_t *handle, void *ptr, size_t maxlen,
 	}
 }
 
-int data_write(nspire_handle_t *handle, void *ptr, size_t maxlen) {
-	return data_write_special(handle, ptr, maxlen, NULL);
+int data_write(nspire_handle_t *handle, void *ptr, size_t len) {
+	return data_write_special(handle, ptr, len, NULL);
 }
 
 int data_read(nspire_handle_t *handle, void *ptr, size_t maxlen, size_t *actual) {
