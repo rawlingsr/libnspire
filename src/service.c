@@ -35,7 +35,6 @@ static void mod_src(struct packet *p) {
 
 int service_disconnect(nspire_handle_t *handle) {
 	int ret;
-	struct packet p;
 	uint8_t data[] = {
 		(handle->host_sid>>8) & 0xFF,
 		(handle->host_sid>>0) & 0xFF };
@@ -43,7 +42,6 @@ int service_disconnect(nspire_handle_t *handle) {
 	if (!handle->connected)
 		return NSPIRE_ERR_SUCCESS;
 
-	p = packet_new(handle);
 	if ( (ret = data_write_special(handle, &data, 2, mod_src)) ) {
 		return ret;
 	}
