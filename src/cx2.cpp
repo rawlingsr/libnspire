@@ -273,25 +273,26 @@ static void handlePacket(struct nspire_handle *nsp_handle, NNSEMessage *message,
 #ifdef DEBUG
 			printf("Got request from client %s (product id %c%c)\n", &req->clientID[12], req->clientID[10], req->clientID[11]);
 #endif
-			
-			NNSEMessage_AddrResp resp = {
-				.hdr = {
-					.service = message->service,
-				},
-				.addr = AddrCalc,
-			};
+/*			Sending this somehow introduces issues like the time request not
+			arriving or the calc responding with yet another address request.
+			// Address release request. Not sure how that works.
+			NNSEMessage_AddrResp resp{};
+			resp.hdr.service = message->service;
+			resp.addr = AddrCalc;
 
-			if(!sendMessage(handle, resp))
+			if(!sendMessage(resp))
 				printf("Failed to send message\n");
+*/
 
-			NNSEMessage_AddrResp resp2 = {
-				.hdr = {
-					.service = message->service,
-				},
-				.addr = 0x80, // No idea
-			};
+			NNSEMessage_AddrResp resp2{};
+			resp2.hdr.service = message->service;
+			resp2.addr = 0x80; // No idea
 
-			if(!sendMessage(handle, resp2))
+			// In some cases on HW and in Firebird always after reconnecting
+			// it ignores the first packet for some reason. So just send it
+			// twice (the seqno doesn't really matter at this point), if it
+			// receives both it'll ignore the second one.
+			if(!sendMessage(handle, resp2) || !sendMessage(handle, resp2))
 				printf("Failed to send message\n");
 
 			break;
